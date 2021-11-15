@@ -13,13 +13,39 @@ import CardActionArea from "@mui/material/CardActionArea";
 
 import { useMediaQuery } from "@mui/material";
 // @mui/icons-material
-import SaveIcon from "../icons/SaveIcon";
+import PlaylistAddIcon from "../icons/PlaylistAddIcon";
 import PlayIcon from "../icons/PlayIcon";
+import { useSongPlaying } from "../../contexts/SongPlayingContext";
+import { useMemo } from "react";
+import PauseIcon from "../icons/PauseIcon";
+
+import useQueuedSongs from "../../hooks/useQueuedSongs";
 
 const SongListItem = ({ song }) => {
   const matchedSmDown = useMediaQuery((theme) => theme.breakpoints.down("sm"));
+  const { addOrRemoveSongFromQueue } = useQueuedSongs();
 
   const { title, artist, thumbnail } = song;
+
+  const {
+    onSongSwitch,
+    isPlaying,
+    song: currentPlayingSong,
+  } = useSongPlaying();
+
+  const onPlayButtonClick = () => {
+    onSongSwitch(song);
+  };
+
+  const onSaveButtonClick = () => {
+    addOrRemoveSongFromQueue(song);
+  };
+
+  const renderedPlayIcon = useMemo(() => {
+    if (song.id === currentPlayingSong.id && isPlaying) return <PauseIcon />;
+
+    return <PlayIcon />;
+  }, [isPlaying, currentPlayingSong, song]);
 
   return (
     <Card
@@ -85,13 +111,13 @@ const SongListItem = ({ song }) => {
             <IconButton
               size="small"
               color="secondary"
-              sx={{ border: 1, borderColor: "inherit" }}
+              onClick={onPlayButtonClick}
             >
-              <PlayIcon />
+              {renderedPlayIcon}
             </IconButton>
 
-            <IconButton size="small" sx={{ border: 1, borderColor: "inherit" }}>
-              <SaveIcon />
+            <IconButton size="small" onClick={onSaveButtonClick}>
+              <PlaylistAddIcon />
             </IconButton>
           </CardActions>
         </Grid>

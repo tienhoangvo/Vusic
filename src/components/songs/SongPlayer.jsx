@@ -6,23 +6,43 @@ import CardHeader from "@mui/material/CardHeader";
 import CardActions from "@mui/material/CardActions";
 import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
-
+import ReactPlayer from "react-player/youtube";
 import QueuedSongList from "./QueuedSongList";
 import SkipPreviousIcon from "../icons/SkipPreviousIcon";
 import SkipNextIcon from "../icons/SkipNextIcon";
 import PlayIcon from "../icons/PlayIcon";
+import PauseIcon from "../icons/PauseIcon";
 import TinyText from "../utils/TinyText";
 import formatDuration from "../../lib/time/formatDuration";
+import { useSongPlaying } from "../../contexts/SongPlayingContext";
+import { useMemo, useRef, useState } from "react";
 
 const SongPlayer = () => {
-  const song = {
-    title: "Love In The Dark",
-    artist: "Leroy Sanchez",
-    thumbnail: "https://i.ytimg.com/vi/mukT7PnJE1Q/maxresdefault.jpg",
-    duration: 284, //seconds
+  const reactPlayerRef = useRef(null);
+  const { song, isPlaying, toggleIsPlaying } = useSongPlaying();
+
+  const [playedPosition, setPlayedPosition] = useState(0);
+
+  const onPlayButtonClick = () => {
+    toggleIsPlaying();
   };
 
-  const position = 32;
+  const onSliderChange = (event) => {
+    setPlayedPosition(event.target.value);
+    reactPlayerRef.current.seekTo(event.target.value, "seconds");
+  };
+
+  const onReactPlayerProgress = (event) => {
+    setPlayedPosition(Math.round(event.playedSeconds));
+  };
+
+  const renderedPlayIcon = useMemo(() => {
+    return isPlaying ? (
+      <PauseIcon fontSize="mediun" />
+    ) : (
+      <PlayIcon fontSize="medium" />
+    );
+  }, [isPlaying]);
 
   return (
     <Stack>
@@ -31,9 +51,15 @@ const SongPlayer = () => {
           <Grid item xs={12} md={6}>
             <Stack>
               <CardHeader
-                sx={{ p: (theme) => theme.spacing(2, 1, 1, 2) }}
+                sx={{
+                  p: (theme) => theme.spacing(2, 1, 1, 2),
+                }}
                 title={song.title}
                 subheader={song.artist}
+                titleTypographyProps={{
+                  variant: "h6",
+                  component: "h3",
+                }}
               />
 
               <CardActions
@@ -43,13 +69,22 @@ const SongPlayer = () => {
                   p: (theme) => theme.spacing(1, 1, 2, 2),
                 }}
               >
-                <Stack flexDirection="row">
+                <Stack
+                  flexDirection="row"
+                  alignItems="center"
+                  justifyContent="center"
+                >
                   <IconButton size="small">
                     <SkipPreviousIcon />
                   </IconButton>
 
-                  <IconButton size="small">
-                    <PlayIcon fontSize="medium" />
+                  <IconButton
+                    color="secondary"
+                    sx={{ border: 1, borderColor: "inherit", mr: 1, ml: 1 }}
+                    size="small"
+                    onClick={onPlayButtonClick}
+                  >
+                    {renderedPlayIcon}
                   </IconButton>
 
                   <IconButton size="small">
@@ -58,19 +93,20 @@ const SongPlayer = () => {
                 </Stack>
 
                 <Slider
+                  onChange={onSliderChange}
                   color="secondary"
                   aria-label="time-indicator"
                   size="small"
-                  value={position}
+                  value={playedPosition}
                   min={0}
                   step={1}
                   max={song.duration}
                 />
 
                 <Stack justifyContent="space-between" direction="row">
-                  <TinyText>{formatDuration(position)}</TinyText>
+                  <TinyText>{formatDuration(playedPosition)}</TinyText>
                   <TinyText>
-                    {formatDuration(song.duration - position)}
+                    {formatDuration(song.duration - playedPosition)}
                   </TinyText>
                 </Stack>
               </CardActions>
@@ -85,7 +121,13 @@ const SongPlayer = () => {
           </Grid>
         </Grid>
       </Card>
-
+      <ReactPlayer
+        ref={reactPlayerRef}
+        onProgress={onReactPlayerProgress}
+        url={song.url}
+        playing={isPlaying}
+        hidden
+      />
       <QueuedSongList />
     </Stack>
   );

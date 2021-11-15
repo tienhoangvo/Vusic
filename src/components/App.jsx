@@ -4,6 +4,7 @@ import Toolbar from "@mui/material/Toolbar";
 
 import Header from "./Header";
 import Main from "./Main";
+import { SongPlayingProvider } from "../contexts/SongPlayingContext";
 
 const App = () => {
   return (
@@ -11,8 +12,9 @@ const App = () => {
       <Header />
       <Container maxWidth="lg" sx={{ mt: 3 }}>
         <Toolbar />
-
-        <Main />
+        <SongPlayingProvider>
+          <Main />
+        </SongPlayingProvider>
       </Container>
     </Box>
   );

@@ -5,8 +5,14 @@ import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "../icons/DeleteIcon";
+import useQueuedSongs from "../../hooks/useQueuedSongs";
 
 const QueuedSongListItem = ({ song }) => {
+  const { addOrRemoveSongFromQueue } = useQueuedSongs();
+
+  const onDeleteButtonClick = () => {
+    addOrRemoveSongFromQueue(song);
+  };
   return (
     <ListItem divider>
       <ListItemAvatar>
@@ -16,7 +22,7 @@ const QueuedSongListItem = ({ song }) => {
       <ListItemText primary={song.title} secondary={song.artist} />
 
       <ListItemSecondaryAction>
-        <IconButton size="small">
+        <IconButton size="small" onClick={onDeleteButtonClick}>
           <DeleteIcon />
         </IconButton>
       </ListItemSecondaryAction>
