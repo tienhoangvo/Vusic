@@ -47,8 +47,8 @@ const AddSong = () => {
     setStatus("loading");
   }, [url]);
   return (
-    <Grid container columnSpacing={2}>
-      <Grid item xs={10}>
+    <Grid container columnSpacing={1}>
+      <Grid item xs={9} md={10}>
         <TextField
           value={url}
           onChange={(event) => {
@@ -57,7 +57,7 @@ const AddSong = () => {
           type="url"
           size="small"
           fullWidth
-          placeholder={"Paste YouTube or Soundcloud URL here"}
+          placeholder={"Paste the YouTube music video URL here"}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -68,11 +68,13 @@ const AddSong = () => {
         />
       </Grid>
 
-      <Grid item xs={2} sx={{ alignSelf: "center" }}>
+      <Grid item container xs={3} md={2} sx={{ alignSelf: "stretch" }}>
         <AddSongButton song={song} status={status} />
       </Grid>
 
-      <ReactPlayer url={url} onReady={onReactPlayerReady} hidden />
+      <Grid item xs={12}>
+        <ReactPlayer url={url} onReady={onReactPlayerReady} hidden />
+      </Grid>
     </Grid>
   );
 };

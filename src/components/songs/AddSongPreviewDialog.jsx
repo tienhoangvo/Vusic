@@ -28,7 +28,13 @@ const AddSongPreviewDialog = ({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="sm"
+      fullWidth
+      keepMounted={false}
+    >
       <CardHeader
         sx={{ borderBottom: 2, borderColor: "divider" }}
         title="Edit Song Preview"

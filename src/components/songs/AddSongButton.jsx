@@ -97,10 +97,11 @@ const AddSongButton = ({ song, status }) => {
       </AddSongPreviewDialog>
 
       <Button
+        sx={{ height: "100%", width: "100%" }}
+        size="small"
         disabled={status === "idle"}
         loading={status === "loading"}
         disableElevation
-        fullWidth
         variant="contained"
         endIcon={<AddIcon />}
         onClick={onAddButtonClick}

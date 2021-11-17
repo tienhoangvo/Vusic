@@ -15,13 +15,73 @@ import PauseIcon from "../icons/PauseIcon";
 import TinyText from "../utils/TinyText";
 import formatDuration from "../../lib/time/formatDuration";
 import { useSongPlaying } from "../../contexts/SongPlayingContext";
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
+import useQueuedSongs from "../../hooks/useQueuedSongs";
 
 const SongPlayer = () => {
   const reactPlayerRef = useRef(null);
-  const { song, isPlaying, toggleIsPlaying } = useSongPlaying();
+  const { song, isPlaying, toggleIsPlaying, onSongSwitch, onSongPause } =
+    useSongPlaying();
 
   const [playedPosition, setPlayedPosition] = useState(0);
+
+  const { queuedSongs } = useQueuedSongs();
+
+  const nextSong = useMemo(() => {
+    if (!song) return null;
+
+    if (!queuedSongs) return null;
+
+    if (!queuedSongs.length) return null;
+
+    const songIndex = queuedSongs.findIndex((s) => s.id === song.id);
+
+    if (songIndex === -1) {
+      //the current song is not in the queue then play the first one;
+      return queuedSongs[0];
+    }
+
+    if (songIndex === queuedSongs.length - 1) {
+      // the current playing song is the last song of the queue then replay the first one!
+      return queuedSongs[0];
+    }
+
+    return queuedSongs[songIndex + 1];
+  }, [queuedSongs, song]);
+
+  const previousSong = useMemo(() => {
+    if (!song) return null;
+
+    if (!queuedSongs) return null;
+
+    if (!queuedSongs.length) return null;
+
+    const songIndex = queuedSongs.findIndex((s) => s.id === song.id);
+
+    if (songIndex === -1) {
+      //the current song is not in the queue then play the first one;
+      return queuedSongs[queuedSongs.length - 1];
+    }
+
+    if (songIndex === 0) {
+      // the current playing song is the last song of the queue then replay the first one!
+      return queuedSongs[queuedSongs.length - 1];
+    }
+
+    return queuedSongs[songIndex - 1];
+  }, [queuedSongs, song]);
+
+  const onNextSongClick = useCallback(() => {
+    if (!nextSong) return;
+
+    onSongSwitch(nextSong);
+  }, [nextSong]);
+
+  const onPreviousSongClick = useCallback(() => {
+    if (!previousSong) return;
+
+    onSongSwitch(previousSong);
+  }, [previousSong]);
 
   const onPlayButtonClick = () => {
     toggleIsPlaying();
@@ -34,6 +94,16 @@ const SongPlayer = () => {
 
   const onReactPlayerProgress = (event) => {
     setPlayedPosition(Math.round(event.playedSeconds));
+  };
+
+  const onReactPlayerPause = useCallback(() => {
+    if (!isPlaying) return;
+
+    onSongPause();
+  }, [isPlaying]);
+
+  const onReactPlayerEnded = () => {
+    onSongSwitch(nextSong);
   };
 
   const renderedPlayIcon = useMemo(() => {
@@ -74,7 +144,7 @@ const SongPlayer = () => {
                   alignItems="center"
                   justifyContent="center"
                 >
-                  <IconButton size="small">
+                  <IconButton size="small" onClick={onPreviousSongClick}>
                     <SkipPreviousIcon />
                   </IconButton>
 
@@ -87,7 +157,7 @@ const SongPlayer = () => {
                     {renderedPlayIcon}
                   </IconButton>
 
-                  <IconButton size="small">
+                  <IconButton size="small" onClick={onNextSongClick}>
                     <SkipNextIcon />
                   </IconButton>
                 </Stack>
@@ -122,6 +192,8 @@ const SongPlayer = () => {
         </Grid>
       </Card>
       <ReactPlayer
+        onEnded={onReactPlayerEnded}
+        onPause={onReactPlayerPause}
         ref={reactPlayerRef}
         onProgress={onReactPlayerProgress}
         url={song.url}
